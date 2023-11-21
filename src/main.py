@@ -58,8 +58,7 @@ class App(QWidget):
     def init_ui(self):
         self.scene = QGraphicsScene(self)
         self.view = QGraphicsView(self.scene)
-        self.view.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing,
-                                True)  # Enable Antialiasing
+        self.view.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
 
         self.image_item = QGraphicsPixmapItem()
         self.scene.addItem(self.image_item)
@@ -137,11 +136,8 @@ class App(QWidget):
 
     def add_bounding_box(self):
         if self.image_path is not None:
-            rect_item = DraggableRectItem(
-                0, 0, 100, 100,
-                title="orange")  # Initial size, you can adjust as needed
-            rect_item.setPos(50,
-                             50)  # Initial position, you can adjust as needed
+            rect_item = DraggableRectItem(0, 0, 100, 100, title="orange")
+            rect_item.setPos(50, 50)
             rect_item.setPen(QtGui.QColor().red())
             self.scene.addItem(rect_item)
             self.rect_items.append(rect_item)
