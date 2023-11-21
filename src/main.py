@@ -2,17 +2,28 @@ import sys
 import os
 import json
 from PyQt6 import QtGui
-from PyQt6.QtWidgets import (QApplication, QGraphicsScene, QGraphicsView,
-                             QGraphicsRectItem, QGraphicsPixmapItem,
-                             QVBoxLayout, QWidget, QPushButton, QFileDialog)
+from PyQt6.QtWidgets import (QApplication, QGraphicsScene, QGraphicsTextItem,
+                             QGraphicsView, QGraphicsRectItem,
+                             QGraphicsPixmapItem, QVBoxLayout, QWidget,
+                             QPushButton, QFileDialog)
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QPointF, QRectF, Qt
 
 
 class DraggableRectItem(QGraphicsRectItem):
-    def __init__(self, x, y, width, height):
+
+    def __init__(self, x, y, width, height, title=""):
         super().__init__(x, y, width, height)
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable, True)
+        self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsSelectable, True)
+        self.setFlag(
+            QGraphicsRectItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
+
+        self.title = title
+        self.title_item = QGraphicsTextItem(self.title, self)
+        self.title_item.setDefaultTextColor(QtGui.QColor().fromRgb(
+            255, 255, 255))
+        self.adjust_annotations()
 
     def itemChange(self, change, value):
         if change == QGraphicsRectItem.GraphicsItemChange.ItemPositionChange:
@@ -20,8 +31,19 @@ class DraggableRectItem(QGraphicsRectItem):
         return super().itemChange(change, value)
 
     def adjust_annotations(self):
-        # TODO
-        pass
+        self.title_item.setPos(self.rect().topLeft() + QPointF(5, 5))
+
+    def mouseMoveEvent(self, event):
+        if not event:
+            return
+
+        if self.isSelected() and event.buttons() == Qt.MouseButton.RightButton:
+            self.resize(event.pos() - self.rect().topLeft())
+        super().mouseMoveEvent(event)
+
+    def resize(self, size):
+        self.prepareGeometryChange()
+        self.setRect(QRectF(self.rect().topLeft(), size))
 
 
 class App(QWidget):
@@ -89,7 +111,10 @@ class App(QWidget):
                 annotations = json.load(f)
 
             for annotation in annotations:
-                rect_item = DraggableRectItem(annotation['x'], annotation['y'], annotation['width'], annotation['height'])
+                rect_item = DraggableRectItem(annotation['x'], annotation['y'],
+                                              annotation['width'],
+                                              annotation['height'],
+                                              annotation['title'])
                 rect_item.setPen(QtGui.QColor().red())
                 self.scene.addItem(rect_item)
                 self.rect_items.append(rect_item)
@@ -103,6 +128,7 @@ class App(QWidget):
                     'y': rect_item.y(),
                     'width': rect_item.rect().width(),
                     'height': rect_item.rect().height(),
+                    'title': rect_item.title,
                 })
 
             assert self.annotations_path is not None
@@ -112,7 +138,8 @@ class App(QWidget):
     def add_bounding_box(self):
         if self.image_path is not None:
             rect_item = DraggableRectItem(
-                0, 0, 100, 100)  # Initial size, you can adjust as needed
+                0, 0, 100, 100,
+                title="orange")  # Initial size, you can adjust as needed
             rect_item.setPos(50,
                              50)  # Initial position, you can adjust as needed
             rect_item.setPen(QtGui.QColor().red())
