@@ -31,17 +31,17 @@ class DraggableRectItem(QGraphicsRectItem):
     def itemChange(self, change, value):
         if change == QGraphicsRectItem.GraphicsItemChange.ItemPositionChange:
             self.adjust_annotations()
+
         return super().itemChange(change, value)
 
     def adjust_annotations(self):
         self.title_item.setPos(self.rect().topLeft() + QPointF(5, 5))
 
     def mouseMoveEvent(self, event):
-        if not event:
-            return
+        if event:
+            if self.isSelected() and event.buttons() == Qt.MouseButton.RightButton:
+                self.resize(event.pos() - self.rect().topLeft())
 
-        if self.isSelected() and event.buttons() == Qt.MouseButton.RightButton:
-            self.resize(event.pos() - self.rect().topLeft())
         super().mouseMoveEvent(event)
 
     def resize(self, size):
