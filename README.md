@@ -42,5 +42,6 @@ When developing `labeller`, the following scripts may be useful:
 ```sh
 ./scripts/fmt.sh  # Run the formatter
 ./scripts/lint.sh  # Run the linter
-./scripts/test.sh  # Run the test suite
+./scripts/type.sh  # Run the type checker
+./scripts/test.sh  # Run the test suite (WIP)
 ```
