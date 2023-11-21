@@ -6,7 +6,7 @@ from PyQt6 import QtGui
 from PyQt6.QtWidgets import (QApplication, QGraphicsScene, QGraphicsTextItem,
                              QGraphicsView, QGraphicsRectItem,
                              QGraphicsPixmapItem, QVBoxLayout, QWidget,
-                             QPushButton, QFileDialog)
+                             QPushButton, QFileDialog, QToolBar)
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import QPointF, QRectF, Qt
 
@@ -39,7 +39,8 @@ class DraggableRectItem(QGraphicsRectItem):
 
     def mouseMoveEvent(self, event):
         if event:
-            if self.isSelected() and event.buttons() == Qt.MouseButton.RightButton:
+            if self.isSelected() and event.buttons(
+            ) == Qt.MouseButton.RightButton:
                 self.resize(event.pos() - self.rect().topLeft())
 
         super().mouseMoveEvent(event)
@@ -56,19 +57,24 @@ class App(QWidget):
 
         self.image_path = None
         self.annotations_path = None
-        self.init_ui()
-
-    def init_ui(self):
-        self.scene = QGraphicsScene(self)
-        self.view = QGraphicsView(self.scene)
-        self.view.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
-
-        self.image_item = QGraphicsPixmapItem()
-        self.scene.addItem(self.image_item)
-
         self.rect_items = []
 
         layout = QVBoxLayout(self)
+
+        self.tool_bar = QToolBar()
+        layout.addWidget(self.tool_bar)
+
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("zoom-in"), "Zoom In",
+                                self.zoom_in)
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("zoom-out"), "Zoom Out",
+                                self.zoom_out)
+
+        self.scene = QGraphicsScene(self)
+        self.image_item = QGraphicsPixmapItem()
+        self.scene.addItem(self.image_item)
+
+        self.view = QGraphicsView(self.scene)
+        self.view.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
         layout.addWidget(self.view)
 
         self.add_box_button = QPushButton("Add Bounding Box", self)
@@ -152,6 +158,12 @@ class App(QWidget):
             if isinstance(rect_item, DraggableRectItem):
                 self.scene.removeItem(rect_item)
                 self.rect_items.remove(rect_item)
+
+    def zoom_in(self):
+        self.view.scale(1.1, 1.1)
+
+    def zoom_out(self):
+        self.view.scale(0.9, 0.9)
 
 
 if __name__ == '__main__':
