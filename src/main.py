@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import (QApplication, QGraphicsScene, QGraphicsTextItem,
                              QGraphicsView, QGraphicsRectItem,
@@ -18,6 +19,8 @@ class DraggableRectItem(QGraphicsRectItem):
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.setFlag(
             QGraphicsRectItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
+
+        self.setPen(QtGui.QColor().red())
 
         self.title = title
         self.title_item = QGraphicsTextItem(self.title, self)
@@ -114,7 +117,6 @@ class App(QWidget):
                                               annotation['width'],
                                               annotation['height'],
                                               annotation['title'])
-                rect_item.setPen(QtGui.QColor().red())
                 self.scene.addItem(rect_item)
                 self.rect_items.append(rect_item)
 
@@ -138,7 +140,6 @@ class App(QWidget):
         if self.image_path is not None:
             rect_item = DraggableRectItem(0, 0, 100, 100, title="orange")
             rect_item.setPos(50, 50)
-            rect_item.setPen(QtGui.QColor().red())
             self.scene.addItem(rect_item)
             self.rect_items.append(rect_item)
 
