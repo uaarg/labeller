@@ -85,7 +85,7 @@ class App(QWidget):
     def load_image(self):
         file_dialog = QFileDialog()
         file_dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
-        file_dialog.setNameFilter("Images (*.png *.jpg *.bmp)")
+        file_dialog.setNameFilter("Images (*.png *.jpg *.bmp *.jpeg)")
         file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
 
         if file_dialog.exec() == QFileDialog.DialogCode.Accepted:
