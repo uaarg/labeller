@@ -1,4 +1,4 @@
-name: Lint
+name: Lint & Typecheck
 
 on: [push]
 
@@ -22,3 +22,5 @@ jobs:
       run: pip install -r requirements.txt
     - name: Run linter
       run: ./scripts/lint.sh
+    - name: Run type checkers
+      run: ./scripts/type.sh
