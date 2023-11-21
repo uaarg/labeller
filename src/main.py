@@ -2,6 +2,7 @@ import sys
 import os
 import json
 
+import qdarktheme
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import (QApplication, QGraphicsScene, QGraphicsTextItem,
                              QGraphicsView, QGraphicsRectItem,
@@ -168,6 +169,7 @@ class App(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    qdarktheme.setup_theme('auto')
     window = App()
     window.setGeometry(100, 100, 800, 600)
     window.setWindowTitle('Bounding Box Annotation Tool')
