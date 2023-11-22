@@ -106,6 +106,9 @@ class App(QWidget):
         self.setLayout(layout)
 
     def load_image(self):
+        """
+        Open the load image dialog.
+        """
         file_dialog = QFileDialog()
         file_dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
         file_dialog.setNameFilter("Images (*.png *.jpg *.bmp *.jpeg)")
@@ -117,6 +120,12 @@ class App(QWidget):
             self.set_image(file_path)
 
     def parse_curr_image(self) -> Optional[Tuple[str, int, str]]:
+        """
+        If there is an image currently open, return that image's dirname, name,
+        extension as a tuple.
+
+        Otherwise return None.
+        """
         if self.image_path is None:
             return None
 
@@ -144,34 +153,57 @@ class App(QWidget):
         return False
 
     def next_image(self):
+        """
+        Try to load the next image in the current folder.
+
+        ie. If we are on image bundle/0.jpeg, we will try to load bundle/1.jpeg
+        """
         path = self.parse_curr_image()
         if not path:
             return
+
+        self.save_annotations()
 
         dirname, idx, ext = path
         newpath = dirname + str(idx + 1) + ext
         self.try_load_image(newpath)
 
     def prev_image(self):
+        """
+        Try to load the previous image in the current folder.
+
+        ie. If we are on image bundle/1.jpeg, we will try to load bundle/0.jpeg
+        """
         path = self.parse_curr_image()
         if not path:
             return
+
+        self.save_annotations()
 
         dirname, idx, ext = path
         newpath = dirname + str(idx - 1) + ext
         self.try_load_image(newpath)
 
     def set_image(self, file_path: str):
+        """
+        Update the image using a given file path.
+        """
         self.image_path = file_path
         self.annotations_path = self.get_annotations_path(file_path)
         pixmap = QPixmap(file_path)
         self.image_item.setPixmap(pixmap)
 
     def get_annotations_path(self, image_path: str) -> str:
+        """
+        Extract the annotation JSON file path from an image path.
+        """
         base_path, ext = os.path.splitext(image_path)
-        return base_path + '.json'
+        return base_path + '.label'
 
     def load_annotations(self, image_path: str):
+        """
+        Try to load annotations for a given image.
+        """
         annotations_path = self.get_annotations_path(image_path)
         if os.path.exists(annotations_path):
             with open(annotations_path, 'r') as f:
@@ -186,6 +218,9 @@ class App(QWidget):
                 self.rect_items.append(rect_item)
 
     def save_annotations(self):
+        """
+        Save any annotations for the current image.
+        """
         if self.image_path is not None:
             annotations = []
             for rect_item in self.rect_items:
@@ -202,6 +237,9 @@ class App(QWidget):
                 json.dump(annotations, f)
 
     def add_bounding_box(self):
+        """
+        Add a bounding box over the current image.
+        """
         if self.image_path is not None:
             rect_item = DraggableRectItem(0, 0, 100, 100, title="orange")
             rect_item.setPos(50, 50)
@@ -209,29 +247,49 @@ class App(QWidget):
             self.rect_items.append(rect_item)
 
     def keyPressEvent(self, event: Optional[QtGui.QKeyEvent]):
-        if event and event.key() == Qt.Key.Key_Delete:
+        """
+        Dispatch key press shortcuts
+        """
+        if not event:
+            return
+
+        if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
             self.delete_selected_boxes()
 
     def delete_selected_boxes(self):
+        """
+        Remove all selected annotation boxes.
+        """
         for rect_item in self.scene.selectedItems():
             if isinstance(rect_item, DraggableRectItem):
                 self.scene.removeItem(rect_item)
                 self.rect_items.remove(rect_item)
 
     def zoom_in(self):
+        """
+        Zoom in by an increment of 10%.
+        """
         self.view.scale(1.1, 1.1)
 
     def zoom_out(self):
+        """
+        Zoom out by an increment of 10%.
+        """
         self.view.scale(0.9, 0.9)
 
     def pinch_trigger(self, gesture):
-        # Adjust the scale factor based on the pinch gesture
+        """
+        Adjust the scale factor based on the pinch gesture
+        """
         zoom_factor = gesture.scaleFactor()
         self.view.setTransform(self.view.transform().scale(
             zoom_factor, zoom_factor))
 
     def eventFilter(self, source: Optional[QObject],
                     event: Optional[QEvent]) -> bool:
+        """
+        Manage gesture events. Used for, eg. zooming in the image.
+        """
         if event and event.type() == QEvent.Type.Gesture:
             assert isinstance(event, QGestureEvent)
             gesture_event = event
