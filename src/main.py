@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (QApplication, QGestureEvent, QGraphicsScene,
                              QGraphicsRectItem, QGraphicsPixmapItem,
                              QPinchGesture, QVBoxLayout, QWidget, QFileDialog,
                              QToolBar)
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QKeyEvent, QPixmap
 from PyQt6.QtCore import QEvent, QObject, QPointF, QRectF, Qt
 
 
@@ -63,6 +63,8 @@ class App(QWidget):
         self.image_path = None
         self.annotations_path = None
         self.rect_items = []
+
+        self.installEventFilter(self)
 
         layout = QVBoxLayout(self)
 
@@ -248,7 +250,7 @@ class App(QWidget):
 
     def keyPressEvent(self, event: Optional[QtGui.QKeyEvent]):
         """
-        Dispatch key press shortcuts
+        Dispatch various key press shortcuts.
         """
         if not event:
             return
@@ -292,12 +294,21 @@ class App(QWidget):
         """
         if event and event.type() == QEvent.Type.Gesture:
             assert isinstance(event, QGestureEvent)
-            gesture_event = event
-            for gesture in gesture_event.gestures():
+            for gesture in event.gestures():
                 if gesture.state(
                 ) == Qt.GestureState.GestureUpdated and isinstance(
                         gesture, QPinchGesture):
                     self.pinch_trigger(gesture)
+
+        elif event and event.type() == QEvent.Type.ShortcutOverride:
+            assert isinstance(event, QKeyEvent)
+
+            # Some keys, ie. the arrow keys, are not sent to keyPressEvent. So
+            # we have to handle them in an event filter.
+            if event.key() == Qt.Key.Key_Left:
+                self.prev_image()
+            elif event.key() == Qt.Key.Key_Right:
+                self.next_image()
 
         return super().eventFilter(source, event)
 
