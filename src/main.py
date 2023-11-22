@@ -85,10 +85,10 @@ class App(QWidget):
 
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Load Image",
                                 self.load_image)
-        self.tool_bar.addAction(QtGui.QIcon.fromTheme("next"), "Next Image",
-                                self.next_image)
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("previous"),
                                 "Previous Image", self.prev_image)
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("next"), "Next Image",
+                                self.next_image)
 
         self.scene = QGraphicsScene(self)
         self.image_item = QGraphicsPixmapItem()
