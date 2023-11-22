@@ -2,13 +2,15 @@ import sys
 import os
 import json
 
+from typing import Optional
+
 from PyQt6 import QtGui
-from PyQt6.QtWidgets import (QApplication, QGraphicsScene, QGraphicsTextItem,
+from PyQt6.QtWidgets import (QApplication, QGestureEvent, QGraphicsScene, QGraphicsTextItem,
                              QGraphicsView, QGraphicsRectItem,
-                             QGraphicsPixmapItem, QVBoxLayout, QWidget,
+                             QGraphicsPixmapItem, QPinchGesture, QVBoxLayout, QWidget,
                              QPushButton, QFileDialog, QToolBar)
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import QPointF, QRectF, Qt
+from PyQt6.QtCore import QEvent, QObject, QPointF, QRectF, Qt
 
 
 class DraggableRectItem(QGraphicsRectItem):
@@ -76,6 +78,11 @@ class App(QWidget):
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
         layout.addWidget(self.view)
+
+        viewport = self.view.viewport()
+        assert viewport is not None
+        viewport.grabGesture(Qt.GestureType.PinchGesture)
+        viewport.installEventFilter(self)
 
         self.add_box_button = QPushButton("Add Bounding Box", self)
         self.add_box_button.clicked.connect(self.add_bounding_box)
@@ -149,8 +156,8 @@ class App(QWidget):
             self.scene.addItem(rect_item)
             self.rect_items.append(rect_item)
 
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Delete:
+    def keyPressEvent(self, event: Optional[QtGui.QKeyEvent]):
+        if event and event.key() == Qt.Key.Key_Delete:
             self.delete_selected_boxes()
 
     def delete_selected_boxes(self):
@@ -164,6 +171,21 @@ class App(QWidget):
 
     def zoom_out(self):
         self.view.scale(0.9, 0.9)
+
+    def pinch_trigger(self, gesture):
+        # Adjust the scale factor based on the pinch gesture
+        zoom_factor = gesture.scaleFactor()
+        self.view.setTransform(self.view.transform().scale(zoom_factor, zoom_factor))
+
+    def eventFilter(self, source: Optional[QObject], event: Optional[QEvent]) -> bool:
+        if event and event.type() == QEvent.Type.Gesture:
+            assert isinstance(event, QGestureEvent)
+            gesture_event = event
+            for gesture in gesture_event.gestures():
+                if gesture.state() == Qt.GestureState.GestureUpdated and isinstance(gesture, QPinchGesture):
+                    self.pinch_trigger(gesture)
+
+        return super().eventFilter(source, event)
 
 
 if __name__ == '__main__':
