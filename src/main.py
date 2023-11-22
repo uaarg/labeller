@@ -16,7 +16,7 @@ from PyQt6.QtCore import QEvent, QObject, QPointF, QRectF, Qt
 class DraggableRectItem(QGraphicsRectItem):
 
     def __init__(self, x, y, width, height, title=""):
-        super().__init__(x, y, width, height)
+        super().__init__(0, 0, width, height)
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable, True)
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.setFlag(
@@ -29,6 +29,9 @@ class DraggableRectItem(QGraphicsRectItem):
         self.title_item.setDefaultTextColor(QtGui.QColor().fromRgb(
             255, 255, 255))
         self.adjust_annotations()
+
+        self.setPos(x, y)
+        print(self.x(), self.y())
 
     def itemChange(self, change, value):
         if change == QGraphicsRectItem.GraphicsItemChange.ItemPositionChange:
