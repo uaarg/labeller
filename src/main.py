@@ -2,13 +2,14 @@ import sys
 import os
 import json
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from PyQt6 import QtGui
-from PyQt6.QtWidgets import (QApplication, QGestureEvent, QGraphicsScene, QGraphicsTextItem,
-                             QGraphicsView, QGraphicsRectItem,
-                             QGraphicsPixmapItem, QPinchGesture, QVBoxLayout, QWidget,
-                             QPushButton, QFileDialog, QToolBar)
+from PyQt6.QtWidgets import (QApplication, QGestureEvent, QGraphicsScene,
+                             QGraphicsTextItem, QGraphicsView,
+                             QGraphicsRectItem, QGraphicsPixmapItem,
+                             QPinchGesture, QVBoxLayout, QWidget, QFileDialog,
+                             QToolBar)
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import QEvent, QObject, QPointF, QRectF, Qt
 
@@ -31,7 +32,6 @@ class DraggableRectItem(QGraphicsRectItem):
         self.adjust_annotations()
 
         self.setPos(x, y)
-        print(self.x(), self.y())
 
     def itemChange(self, change, value):
         if change == QGraphicsRectItem.GraphicsItemChange.ItemPositionChange:
@@ -74,6 +74,22 @@ class App(QWidget):
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("zoom-out"), "Zoom Out",
                                 self.zoom_out)
 
+        self.tool_bar.addSeparator()
+
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("select"),
+                                "Add Bounding Box", self.add_bounding_box)
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("save"),
+                                "Save Annotations", self.save_annotations)
+
+        self.tool_bar.addSeparator()
+
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Load Image",
+                                self.load_image)
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("next"), "Next Image",
+                                self.next_image)
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("previous"),
+                                "Previous Image", self.prev_image)
+
         self.scene = QGraphicsScene(self)
         self.image_item = QGraphicsPixmapItem()
         self.scene.addItem(self.image_item)
@@ -87,18 +103,6 @@ class App(QWidget):
         viewport.grabGesture(Qt.GestureType.PinchGesture)
         viewport.installEventFilter(self)
 
-        self.add_box_button = QPushButton("Add Bounding Box", self)
-        self.add_box_button.clicked.connect(self.add_bounding_box)
-        layout.addWidget(self.add_box_button)
-
-        self.load_image_button = QPushButton("Load Image", self)
-        self.load_image_button.clicked.connect(self.load_image)
-        layout.addWidget(self.load_image_button)
-
-        self.save_annotations_button = QPushButton("Save Annotations", self)
-        self.save_annotations_button.clicked.connect(self.save_annotations)
-        layout.addWidget(self.save_annotations_button)
-
         self.setLayout(layout)
 
     def load_image(self):
@@ -111,6 +115,51 @@ class App(QWidget):
             file_path = file_dialog.selectedFiles()[0]
             self.load_annotations(file_path)
             self.set_image(file_path)
+
+    def parse_curr_image(self) -> Optional[Tuple[str, int, str]]:
+        if self.image_path is None:
+            return None
+
+        dirname = os.path.dirname(self.image_path)
+        basename = os.path.basename(self.image_path)
+        name, ext = os.path.splitext(basename)
+
+        try:
+            idx = int(name)
+        except ValueError:
+            return None
+
+        return dirname + "/", idx, ext
+
+    def try_load_image(self, path: str) -> bool:
+        """
+        Returns True iff a new image is loaded.
+        """
+        if os.path.exists(path):
+            self.set_image(path)
+            self.load_annotations(path)
+
+            return True
+
+        return False
+
+    def next_image(self):
+        path = self.parse_curr_image()
+        if not path:
+            return
+
+        dirname, idx, ext = path
+        newpath = dirname + str(idx + 1) + ext
+        self.try_load_image(newpath)
+
+    def prev_image(self):
+        path = self.parse_curr_image()
+        if not path:
+            return
+
+        dirname, idx, ext = path
+        newpath = dirname + str(idx - 1) + ext
+        self.try_load_image(newpath)
 
     def set_image(self, file_path: str):
         self.image_path = file_path
@@ -178,14 +227,18 @@ class App(QWidget):
     def pinch_trigger(self, gesture):
         # Adjust the scale factor based on the pinch gesture
         zoom_factor = gesture.scaleFactor()
-        self.view.setTransform(self.view.transform().scale(zoom_factor, zoom_factor))
+        self.view.setTransform(self.view.transform().scale(
+            zoom_factor, zoom_factor))
 
-    def eventFilter(self, source: Optional[QObject], event: Optional[QEvent]) -> bool:
+    def eventFilter(self, source: Optional[QObject],
+                    event: Optional[QEvent]) -> bool:
         if event and event.type() == QEvent.Type.Gesture:
             assert isinstance(event, QGestureEvent)
             gesture_event = event
             for gesture in gesture_event.gestures():
-                if gesture.state() == Qt.GestureState.GestureUpdated and isinstance(gesture, QPinchGesture):
+                if gesture.state(
+                ) == Qt.GestureState.GestureUpdated and isinstance(
+                        gesture, QPinchGesture):
                     self.pinch_trigger(gesture)
 
         return super().eventFilter(source, event)
