@@ -208,6 +208,10 @@ class App(QWidget):
         """
         annotations_path = self.get_annotations_path(image_path)
         if os.path.exists(annotations_path):
+            for old_rect_item in self.rect_items:
+                self.scene.removeItem(old_rect_item)
+            self.rect_items.clear()
+
             with open(annotations_path, 'r') as f:
                 annotations = json.load(f)
 
