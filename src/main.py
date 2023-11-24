@@ -140,8 +140,8 @@ class App(QWidget):
         no_images = len(images)
         start_image = 2**32
         for image in images:
-            name, _ = os.path.splitext(os.path.basename(image))
-            no = int(name)
+            image_name, _ = os.path.splitext(os.path.basename(image))
+            no = int(image_name)
 
             if no <= start_image:
                 start_image = no
