@@ -2,14 +2,15 @@ import sys
 import os
 import json
 import zipfile
+import glob
 import numpy as np
 
 from typing import Optional, Tuple, List
 
 from PyQt6 import QtGui
-from PyQt6.QtWidgets import (QApplication, QGestureEvent, QGraphicsScene,
+from PyQt6.QtWidgets import (QApplication, QErrorMessage, QGestureEvent, QGraphicsScene,
                              QGraphicsTextItem, QGraphicsView,
-                             QGraphicsRectItem, QGraphicsPixmapItem,
+                             QGraphicsRectItem, QGraphicsPixmapItem, QLabel,
                              QPinchGesture, QVBoxLayout, QWidget, QFileDialog,
                              QToolBar)
 from PyQt6.QtGui import QKeyEvent, QPixmap
@@ -66,6 +67,8 @@ class App(QWidget):
         self.annotations_path = None
         self.rect_items = []
 
+        self.dialog = QErrorMessage()
+
         self.installEventFilter(self)
 
         layout = QVBoxLayout(self)
@@ -87,14 +90,21 @@ class App(QWidget):
 
         self.tool_bar.addSeparator()
 
-        self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Load Image",
-                                self.load_image)
-        self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Load Bundle",
-                                self.load_bundle)
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("previous"),
                                 "Previous Image", self.prev_image)
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("next"), "Next Image",
                                 self.next_image)
+
+        self.tool_bar.addSeparator()
+
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Load Bundle",
+                                self.load_bundle)
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Complete Bundle",
+                                self.complete_bundle)
+
+        self.image_progress_text = QLabel()
+        self.update_image_progress_label()
+        self.tool_bar.addWidget(self.image_progress_text)
 
         self.scene = QGraphicsScene(self)
         self.image_item = QGraphicsPixmapItem()
@@ -111,18 +121,31 @@ class App(QWidget):
 
         self.setLayout(layout)
 
-    def load_image(self):
+    def update_image_progress_label(self):
         """
-        Open the load image dialog.
+        Update the status message displayed in the image progress label.
         """
-        file_dialog = QFileDialog()
-        file_dialog.setNameFilter("Images (*.png *.jpg *.bmp *.jpeg)")
-        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        if self.image_path is None:
+            self.image_progress_text.setText("No Image Open")
+            return
 
-        if file_dialog.exec() == QFileDialog.DialogCode.Accepted:
-            file_path = file_dialog.selectedFiles()[0]
-            self.load_annotations(file_path)
-            self.set_image(file_path)
+        curr_image_details = self.parse_curr_image()
+        assert curr_image_details is not None
+        _, name, ext = curr_image_details
+        curr = int(name)
+
+        # TODO: We should cache this
+        images = glob.glob(os.path.join(os.path.dirname(self.image_path), "*.jpeg"))
+        no_images = len(images)
+        start_image = 2**32
+        for image in images:
+            name, _ = os.path.splitext(os.path.basename(image))
+            no = int(name)
+
+            if no <= start_image:
+                start_image = no
+
+        self.image_progress_text.setText(f"Image {curr - start_image + 1}/{no_images}")
 
     def load_bundle(self):
         """
@@ -151,9 +174,39 @@ class App(QWidget):
                 zip.extractall(path=dirname)
 
             image_path = os.path.join(dirname, first_image)
-            print(image_path, first_image)
             self.set_image(image_path)
             self.load_annotations(image_path)
+
+    def complete_bundle(self):
+        """
+        Complete the currently loaded bundle.
+        """
+        if self.image_path is None:
+            return
+
+        self.save_annotations()
+
+        bundle_path = os.path.dirname(self.image_path)
+        bundle_name = os.path.basename(bundle_path)
+        completed_bundle = bundle_path + "-complete.zip"
+
+        images_and_labels = []
+        images = glob.glob(os.path.join(bundle_path, "*.jpeg"))
+        for image_path in images:
+            file = os.path.basename(image_path)
+            name, _ext = os.path.splitext(file)
+
+            label_path = os.path.join(bundle_path, name + ".label")
+            if not os.path.exists(label_path):
+                self.dialog.showMessage("WARNING: Missing label at %r" % label_path)
+                return
+            else:
+                images_and_labels.append((label_path, image_path, name))
+
+        with zipfile.ZipFile(completed_bundle, "w") as zip:
+            for label_path, image_path, name in images_and_labels:
+                zip.write(image_path, bundle_name + "/" + name + ".jpeg")
+                zip.write(label_path, bundle_name + "/" + name + ".label")
 
     def parse_curr_image(self) -> Optional[Tuple[str, int, str]]:
         """
@@ -228,6 +281,8 @@ class App(QWidget):
         self.annotations_path = self.get_annotations_path(file_path)
         pixmap = QPixmap(file_path)
         self.image_item.setPixmap(pixmap)
+
+        self.update_image_progress_label()
 
     def get_annotations_path(self, image_path: str) -> str:
         """
