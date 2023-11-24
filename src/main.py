@@ -1,8 +1,10 @@
 import sys
 import os
 import json
+import zipfile
+import numpy as np
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import (QApplication, QGestureEvent, QGraphicsScene,
@@ -87,6 +89,8 @@ class App(QWidget):
 
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Load Image",
                                 self.load_image)
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Load Bundle",
+                                self.load_bundle)
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("previous"),
                                 "Previous Image", self.prev_image)
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("next"), "Next Image",
@@ -112,7 +116,6 @@ class App(QWidget):
         Open the load image dialog.
         """
         file_dialog = QFileDialog()
-        file_dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
         file_dialog.setNameFilter("Images (*.png *.jpg *.bmp *.jpeg)")
         file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
 
@@ -120,6 +123,37 @@ class App(QWidget):
             file_path = file_dialog.selectedFiles()[0]
             self.load_annotations(file_path)
             self.set_image(file_path)
+
+    def load_bundle(self):
+        """
+        Open the load bundle dialog.
+        """
+        file_dialog = QFileDialog()
+        file_dialog.setNameFilter("Bundle (*.zip)")
+        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+
+        if file_dialog.exec() == QFileDialog.DialogCode.Accepted:
+            file_path = file_dialog.selectedFiles()[0]
+
+            dirname = os.path.dirname(file_path)
+            with zipfile.ZipFile(file_path) as zip:
+                images: List[str] = zip.namelist()
+                image_nos: List[int] = [2**32 for _ in images]
+                for i, path in enumerate(images):
+                    if path[-1] == '/':
+                        continue  # skip directories
+
+                    file = os.path.basename(path)
+                    name, _ext = os.path.splitext(file)
+                    image_nos[i] = int(name)
+                first_image = images[np.argmin(image_nos)]
+
+                zip.extractall(path=dirname)
+
+            image_path = os.path.join(dirname, first_image)
+            print(image_path, first_image)
+            self.set_image(image_path)
+            self.load_annotations(image_path)
 
     def parse_curr_image(self) -> Optional[Tuple[str, int, str]]:
         """
