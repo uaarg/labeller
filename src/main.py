@@ -10,7 +10,7 @@ from typing import Optional, Tuple, List
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import (QApplication, QErrorMessage, QGestureEvent, QGraphicsScene,
                              QGraphicsTextItem, QGraphicsView,
-                             QGraphicsRectItem, QGraphicsPixmapItem, QLabel,
+                             QGraphicsRectItem, QGraphicsPixmapItem, QLabel, QMessageBox,
                              QPinchGesture, QVBoxLayout, QWidget, QFileDialog,
                              QToolBar)
 from PyQt6.QtGui import QKeyEvent, QPixmap
@@ -67,7 +67,8 @@ class App(QWidget):
         self.annotations_path = None
         self.rect_items = []
 
-        self.dialog = QErrorMessage()
+        self.error_dialog = QErrorMessage()
+        self.message_dialog = QMessageBox()
 
         self.installEventFilter(self)
 
@@ -198,7 +199,7 @@ class App(QWidget):
 
             label_path = os.path.join(bundle_path, name + ".label")
             if not os.path.exists(label_path):
-                self.dialog.showMessage("WARNING: Missing label at %r" % label_path)
+                self.error_dialog.showMessage("WARNING: Missing label at %r" % label_path)
                 return
             else:
                 images_and_labels.append((label_path, image_path, name))
@@ -207,6 +208,10 @@ class App(QWidget):
             for label_path, image_path, name in images_and_labels:
                 zip.write(image_path, bundle_name + "/" + name + ".jpeg")
                 zip.write(label_path, bundle_name + "/" + name + ".label")
+
+        self.message_dialog.setText("Bundle Completed")
+        self.message_dialog.setDetailedText("You can safely close the application, or begin labelling a new bundle")
+        self.message_dialog.show()
 
     def parse_curr_image(self) -> Optional[Tuple[str, int, str]]:
         """
