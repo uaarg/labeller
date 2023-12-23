@@ -8,11 +8,11 @@ import numpy as np
 from typing import Optional, Tuple, List
 
 from PyQt6 import QtGui
-from PyQt6.QtWidgets import (QApplication, QErrorMessage, QGestureEvent, QGraphicsScene,
-                             QGraphicsTextItem, QGraphicsView,
-                             QGraphicsRectItem, QGraphicsPixmapItem, QLabel, QMessageBox,
-                             QPinchGesture, QVBoxLayout, QWidget, QFileDialog,
-                             QToolBar)
+from PyQt6.QtWidgets import (QApplication, QErrorMessage, QGestureEvent,
+                             QGraphicsScene, QGraphicsTextItem, QGraphicsView,
+                             QGraphicsRectItem, QGraphicsPixmapItem, QLabel,
+                             QMessageBox, QPinchGesture, QVBoxLayout, QWidget,
+                             QFileDialog, QToolBar)
 from PyQt6.QtGui import QKeyEvent, QPixmap
 from PyQt6.QtCore import QEvent, QObject, QPointF, QRectF, Qt
 
@@ -100,8 +100,8 @@ class App(QWidget):
 
         self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Load Bundle",
                                 self.load_bundle)
-        self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"), "Complete Bundle",
-                                self.complete_bundle)
+        self.tool_bar.addAction(QtGui.QIcon.fromTheme("image"),
+                                "Complete Bundle", self.complete_bundle)
 
         self.image_progress_text = QLabel()
         self.update_image_progress_label()
@@ -136,7 +136,8 @@ class App(QWidget):
         curr = int(name)
 
         # TODO: We should cache this
-        images = glob.glob(os.path.join(os.path.dirname(self.image_path), "*.jpeg"))
+        images = glob.glob(
+            os.path.join(os.path.dirname(self.image_path), "*.jpeg"))
         no_images = len(images)
         start_image = 2**32
         for image in images:
@@ -146,7 +147,8 @@ class App(QWidget):
             if no <= start_image:
                 start_image = no
 
-        self.image_progress_text.setText(f"Image {curr - start_image + 1}/{no_images}")
+        self.image_progress_text.setText(
+            f"Image {curr - start_image + 1}/{no_images}")
 
     def load_bundle(self):
         """
@@ -199,7 +201,8 @@ class App(QWidget):
 
             label_path = os.path.join(bundle_path, name + ".label")
             if not os.path.exists(label_path):
-                self.error_dialog.showMessage("WARNING: Missing label at %r" % label_path)
+                self.error_dialog.showMessage("WARNING: Missing label at %r" %
+                                              label_path)
                 return
             else:
                 images_and_labels.append((label_path, image_path, name))
@@ -210,7 +213,9 @@ class App(QWidget):
                 zip.write(label_path, bundle_name + "/" + name + ".label")
 
         self.message_dialog.setText("Bundle Completed")
-        self.message_dialog.setDetailedText("You can safely close the application, or begin labelling a new bundle")
+        self.message_dialog.setDetailedText(
+            "You can safely close the application, or begin labelling a new bundle"
+        )
         self.message_dialog.show()
 
     def parse_curr_image(self) -> Optional[Tuple[str, int, str]]:

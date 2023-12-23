@@ -1,21 +1,26 @@
 import os
 import zipfile
-import numpy as np
 from PIL import Image
 
+
 class Bounding_Box:
+
     def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
-        self.width = width 
+        self.width = width
         self.height = height
 
+
 class Labeled_Image:
+
     def __init__(self, bounding_box, image):
         self.bounding_box = bounding_box
         self.image = image
 
+
 class Loader:
+
     def __init__(self):
         self.labeled_images = []
 
@@ -35,7 +40,6 @@ class Loader:
                 file = os.path.basename(path)
                 name, _ext = os.path.splitext(file)
                 image_nos[i] = int(name)
-            first_image = images[np.argmin(image_nos)]
             zip.extractall(path=dirname)
 
         self.load_images(dirname)
@@ -48,10 +52,12 @@ class Loader:
             if file.endswith(('.jpeg')):
                 image_file = os.path.join(path, file)
                 # Placeholder for bounding box details - update as per your data format
-                bounding_box = Bounding_Box(0, 0, 100, 100)  
+                bounding_box = Bounding_Box(0, 0, 100, 100)
                 image = Image.open(image_file)
                 self.labeled_images.append(Labeled_Image(bounding_box, image))
 
     def list_images(self):
         for labeled_image in self.labeled_images:
-            print(labeled_image.bounding_box.x, labeled_image.bounding_box.y, labeled_image.bounding_box.width, labeled_image.bounding_box.height, labeled_image.image)
+            print(labeled_image.bounding_box.x, labeled_image.bounding_box.y,
+                  labeled_image.bounding_box.width,
+                  labeled_image.bounding_box.height, labeled_image.image)
