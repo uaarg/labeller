@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from loader import BundleLoader
 import zipfile
+import shutil
 
 
 @pytest.fixture
@@ -25,7 +26,7 @@ def bundle_path() -> str:
 
     if os.path.exists(bundle_dir):
         # We may be in an invalid state, recreate the test bundle entirely
-        os.removedirs(bundle_dir)
+        shutil.rmtree(bundle_dir)
 
     os.mkdir(bundle_dir)
 
