@@ -26,14 +26,17 @@ class BundleLoader:
             zip.extractall(path=self.dirname)
 
         self.images = []
-        extracted_path = os.path.join(self.dirname, os.path.basename(bundle_path).removesuffix(".zip"))
+        extracted_path = os.path.join(
+            self.dirname,
+            os.path.basename(bundle_path).removesuffix(".zip"))
         for file in os.listdir(extracted_path):
             if file.endswith(('.jpeg')):
                 image_file = os.path.join(extracted_path, file)
 
                 dirname, basename = os.path.split(image_file)
                 name, _ = basename.rsplit(".jpeg", maxsplit=1)
-                label_file: Optional[str] = os.path.join(dirname, name + ".label")
+                label_file: Optional[str] = os.path.join(
+                    dirname, name + ".label")
 
                 if label_file and not os.path.exists(label_file):
                     label_file = None
@@ -75,7 +78,8 @@ class BundleLoader:
                 landing_pads = json.load(file)
 
         for i, landing_pad in enumerate(landing_pads):
-            color = LandingPadColor.ORANGE if landing_pad['title'] == "orange" else LandingPadColor.BLUE
+            color = LandingPadColor.ORANGE if landing_pad[
+                'title'] == "orange" else LandingPadColor.BLUE
             position = Vec2(landing_pad['x'], landing_pad['y'])
             size = Vec2(landing_pad['width'], landing_pad['height'])
             landing_pads[i] = LandingPad(color, position, size)
