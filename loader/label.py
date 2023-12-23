@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
-from os import PathLike
 
-from PIL.Image import Image
+from PIL import Image
 
 
 @dataclass
@@ -29,7 +28,6 @@ class LandingPad:
 @dataclass
 class LabelledImage:
     """Labelled image from a bundle."""
-    name: str
-    image: Image
+    name: int
+    image: Image.Image
     landing_pads: List[LandingPad]
-

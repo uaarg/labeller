@@ -33,4 +33,3 @@ class MultiBundleLoader:
         If idx is out of range, this will raise `IndexError`.
         """
         raise NotImplementedError()
-
