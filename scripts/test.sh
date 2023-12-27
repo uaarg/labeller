@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-echo Tests are not yet implemented
-exit 0
+PYTHONPATH='.' pytest test

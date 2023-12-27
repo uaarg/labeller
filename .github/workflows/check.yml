@@ -24,3 +24,5 @@ jobs:
       run: ./scripts/lint.sh
     - name: Run type checkers
       run: ./scripts/type.sh
+    - name: Run tests
+      run: ./scripts/test.sh
