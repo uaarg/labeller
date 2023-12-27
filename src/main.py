@@ -15,6 +15,8 @@ from PyQt6.QtWidgets import (QApplication, QErrorMessage, QGestureEvent,
                              QFileDialog, QToolBar)
 from PyQt6.QtGui import QKeyEvent, QPixmap
 from PyQt6.QtCore import QEvent, QObject, QPointF, QRectF, Qt
+import PIL
+from PIL import Image
 
 
 class DraggableRectItem(QGraphicsRectItem):
@@ -200,12 +202,25 @@ class App(QWidget):
             name, _ext = os.path.splitext(file)
 
             label_path = os.path.join(bundle_path, name + ".label")
-            if not os.path.exists(label_path):
-                self.error_dialog.showMessage("WARNING: Missing label at %r" %
-                                              label_path)
-                return
-            else:
+            if os.path.exists(label_path):
                 images_and_labels.append((label_path, image_path, name))
+            else:
+                # Maybe the image here is invalid? (In many of our bundles,
+                # images were corrupted as we were saturating the pi's SD all
+                # the way until shutdown. This meant that not all image file
+                # contents could properly be flushed to disk.)
+                try:
+                    Image.open(image_path)
+
+                    # If we got here, the image is valid, and the label should
+                    # be created before continuing.
+                    self.error_dialog.showMessage(
+                        "WARNING: Missing label at %r" % label_path)
+                    return
+                except PIL.UnidentifiedImageError:
+                    # The image is invalid. Don't care about it missing a
+                    # .label file. Don't add it to the complete bundle either.
+                    pass
 
         with zipfile.ZipFile(completed_bundle, "w") as zip:
             for label_path, image_path, name in images_and_labels:
