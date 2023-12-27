@@ -69,6 +69,9 @@ class BundleLoader:
 
         If idx is out of range, this will raise `IndexError`.
         """
+        if idx >= self.count() or idx < 0:
+            raise IndexError(idx)
+
         name, image_file, label_file = self.images[idx]
 
         image = Image.open(image_file)
