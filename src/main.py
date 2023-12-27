@@ -214,8 +214,8 @@ class App(QWidget):
 
                     # If we got here, the image is valid, and the label should
                     # be created before continuing.
-                    self.error_dialog.showMessage("WARNING: Missing label at %r" %
-                                                  label_path)
+                    self.error_dialog.showMessage(
+                        "WARNING: Missing label at %r" % label_path)
                     return
                 except PIL.UnidentifiedImageError:
                     # The image is invalid. Don't care about it missing a
