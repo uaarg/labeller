@@ -3,7 +3,7 @@ import os
 import json
 import numpy as np
 from PIL import Image
-from loader import BundleLoader
+from loader import BundleLoader, MultiBundleLoader
 import zipfile
 import shutil
 
@@ -78,3 +78,62 @@ def test_loader(bundle_path):
             assert len(im.landing_pads) == 0
 
         assert im.image is not None
+
+
+def test_loader_bounds(bundle_path):
+    bl = BundleLoader(bundle_path)
+
+    threw = False
+    try:
+        bl.get(-1)
+    except IndexError:
+        threw = True
+    assert threw
+
+    threw = False
+    try:
+        bl.get(bl.count())
+    except IndexError:
+        threw = True
+    assert threw
+
+
+def test_multiloader(bundle_path):
+    bl = MultiBundleLoader([bundle_path, bundle_path])
+
+    assert len(bl) == 500 * 2
+
+    for i, im in enumerate(bl.iter()):
+        assert im.name == i % 500
+
+        if 100 <= i <= 300 or 600 <= i <= 800:
+            assert len(im.landing_pads) == 1
+        else:
+            assert len(im.landing_pads) == 0
+
+        assert im.image is not None
+
+
+def test_multiloader_bounds(bundle_path):
+    bl = MultiBundleLoader([bundle_path, bundle_path])
+
+    threw = False
+    try:
+        bl.get(-1)
+    except IndexError:
+        threw = True
+    assert threw
+
+    threw = False
+    try:
+        bl.get(bl.count())
+    except IndexError:
+        threw = True
+    assert threw
+
+    threw = False
+    try:
+        bl.get(bl.count() - 1)
+    except IndexError:
+        threw = True
+    assert not threw
