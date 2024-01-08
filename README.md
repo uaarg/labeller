@@ -45,3 +45,13 @@ When developing `labeller`, the following scripts may be useful:
 ./scripts/type.sh  # Run the type checker
 ./scripts/test.sh  # Run the test suite (WIP)
 ```
+
+## Benchmarks
+
+Benchmarks for specific algorithms can be run with:
+
+```sh
+benchmarks/run.sh <name>
+```
+
+Leave `name` blank to see a list of benchmarks you can run.
