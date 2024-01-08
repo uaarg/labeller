@@ -18,7 +18,7 @@ class BundleLoader:
     `MultiBundleLoader`.
     """
 
-    def __init__(self, bundle_path: PathLike):
+    def __init__(self, bundle_path: PathLike | str):
         self.dirname = tempfile.mkdtemp()
         atexit.register(self.__cleanup)  # Cleanup the tmpdir on exit
 
