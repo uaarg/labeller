@@ -4,7 +4,7 @@ import time
 import numpy as np
 
 from loader import MultiBundleLoader, BundleLoader, Vec2
-from .detector import LandingPadDetector, BoundingBox
+from benchmarks.detector import LandingPadDetector, BoundingBox
 
 
 def benchmark(detector: LandingPadDetector,

@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 
 from loader import MultiBundleLoader, Vec2
-from .detector import BoundingBox, LandingPadDetector
+from benchmarks.detector import BoundingBox, LandingPadDetector
 
 
 class ColorFilterDetector(LandingPadDetector):
