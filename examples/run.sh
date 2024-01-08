@@ -5,7 +5,7 @@ set -o errexit
 example="$1"
 
 if ! git status 2&>1 >/dev/null; then
-  echo "Please run this script from inside the labller repository"
+  echo "Please run this script from inside the labeller repository"
   exit 1
 fi
 
