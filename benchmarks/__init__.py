@@ -1,53 +1,10 @@
-import glob
-from functools import lru_cache
 from typing import List, Optional
 import time
 
-from PIL import Image
-from matplotlib import pyplot as plt
 import numpy as np
-import cv2
 
 from loader import MultiBundleLoader, BundleLoader, Vec2
-
-
-class BoundingBox:
-
-    def __init__(self, position: Vec2, size: Vec2):
-        self.position = position
-        self.size = size
-
-    @lru_cache(maxsize=2)
-    def intersection(self, other: 'BoundingBox') -> float:
-        top_left = Vec2.max(self.position, other.position)
-        bottom_right = Vec2.min(self.position + self.size,
-                                other.position + other.size)
-
-        size = bottom_right - top_left
-
-        intersection = size.x * size.y
-        return max(intersection, 0)
-
-    def union(self, other: 'BoundingBox') -> float:
-        intersection = self.intersection(other)
-        if intersection == 0:
-            return 0
-
-        union = self.size.x * self.size.y + other.size.x * other.size.y - intersection
-        return union
-
-    def intersection_over_union(self, pred: 'BoundingBox') -> Optional[float]:
-        intersection = self.intersection(pred)
-        if intersection == 0:
-            return 0
-        iou = intersection / self.union(pred)
-        return iou
-
-
-class LandingPadDetector:
-
-    def predict(self, image: Image.Image) -> Optional[BoundingBox]:
-        raise NotImplementedError()
+from .detector import LandingPadDetector, BoundingBox
 
 
 def benchmark(detector: LandingPadDetector,
@@ -107,33 +64,3 @@ def benchmark(detector: LandingPadDetector,
     print(f"Time (ms): {np.median(times_):.1f} median,")
     print(f"           {np.min(times_):.1f} min,")
     print(f"           {np.max(times_):.1f} max")
-
-
-class MyLandingPadDetector(LandingPadDetector):
-
-    def predict(self, image: Image.Image) -> Optional[BoundingBox]:
-        img = np.array(image)
-        gray_img = img[:, :, 2]
-
-        _, thresh_img = cv2.threshold(gray_img, 240, 255, cv2.THRESH_BINARY)
-        contours, _ = cv2.findContours(thresh_img, cv2.RETR_EXTERNAL,
-                                       cv2.CHAIN_APPROX_SIMPLE)
-
-        min_box = None
-        for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            if min_box is None or (w + x) < min_box[0] + min_box[2]:
-                min_box = [x, y, w, h]
-
-        if not min_box:
-            return None
-
-        x, y, w, h = min_box[:4]
-
-        return BoundingBox(Vec2(x, y), Vec2(w, h))
-
-
-if __name__ == "__main__":
-    detector = MyLandingPadDetector()
-    bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
-    benchmark(detector, bundles)
