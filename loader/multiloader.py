@@ -1,4 +1,4 @@
-from typing import List, Generator
+from typing import Sequence, Generator
 from os import PathLike
 
 from .label import LabelledImage
@@ -10,7 +10,7 @@ class MultiBundleLoader:
     bundles at once.
     """
 
-    def __init__(self, bundle_paths: List[PathLike]):
+    def __init__(self, bundle_paths: Sequence[PathLike | str]):
         self.subloaders = [BundleLoader(path) for path in bundle_paths]
 
         # Lengths are invariant in a BundleLoader. We can safely cache them for
