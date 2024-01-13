@@ -19,6 +19,8 @@ def benchmark(detector: LandingPadDetector,
         else:
             y_true.append(None)
 
+        print("Predicting...")
+
         start = time.time_ns()
         pred = detector.predict(im.image)
         end = time.time_ns()
