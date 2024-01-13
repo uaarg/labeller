@@ -24,7 +24,7 @@ class YoloDetector(LandingPadDetector):
 
     def __init__(
         self,
-        weights='yolov5s.pt',
+        weights='benchmarks/landing_nano.pt',
         imgsz=(640, 640),
         device='cpu',
         data='data/coco128.yaml',
