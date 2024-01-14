@@ -5,6 +5,7 @@ import numpy as np
 import sys
 import torch
 from pathlib import Path
+from matplotlib import pyplot as plt
 
 from loader import MultiBundleLoader, Vec2
 from benchmarks.detector import BoundingBox, LandingPadDetector
@@ -66,11 +67,11 @@ class YoloDetector(LandingPadDetector):
         im0 = np.array(image)
         gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
 
-        im = letterbox(im0,
+        im, ratio, (dw, dh) = letterbox(im0,
                        self.imgsz,
                        stride=self.model.stride,
                        auto=False,
-                       scaleup=False)[0]  # padded resize
+                       scaleup=False)  # padded resize
         im = im.transpose((2, 0, 1))  # HWC to CHW
         im = np.ascontiguousarray(im)  # contiguous
 
@@ -91,24 +92,19 @@ class YoloDetector(LandingPadDetector):
                                    agnostic=False,
                                    max_det=self.max_det)
 
-        # Second-stage classifier (optional)
-        # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
-
         results = []
-        for i, prediction in enumerate(pred):
-            prediction[:, :4] = scale_coords(im.shape[2:], prediction[:, :4],
-                                             im0.shape).round()
-            for *xyxy, conf, cls in reversed(prediction).tolist():
-                xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) /
-                        gn).view(-1).tolist()
-                results.append({
-                    'type': self.model.names[int(cls)],
-                    'confidence': conf,
-                    'x': xywh[0],
-                    'y': xywh[1],
-                    'w': xywh[2],
-                    'h': xywh[3]
-                })
+        for prediction in pred:
+            if prediction.shape[0] == 0:
+                continue
+
+            x1, y1, x2, y2 = prediction[0, :4].tolist()
+            results.append({
+                'confidence': prediction[0, 4].item(),
+                'x': min(x1, x2) - dw,
+                'y': min(y1, y2) - dh,
+                'w': abs(x2 - x1),
+                'h': abs(y2 - y1)
+            })
 
         if not results:
             return None
