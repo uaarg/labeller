@@ -84,7 +84,8 @@ class BundleLoader:
             color = LandingPadColor.ORANGE if landing_pad[
                 'title'] == "orange" else LandingPadColor.BLUE
             position = Vec2(max(landing_pad['x'], 0), max(landing_pad['y'], 0))
-            size = Vec2(min(landing_pad['width'], image.width), min(landing_pad['height'], image.height))
+            size = Vec2(min(landing_pad['width'], image.width),
+                        min(landing_pad['height'], image.height))
             landing_pads[i] = LandingPad(color, position, size)
 
         return LabelledImage(name, image, landing_pads)

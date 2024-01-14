@@ -5,7 +5,6 @@ import numpy as np
 import sys
 import torch
 from pathlib import Path
-from matplotlib import pyplot as plt
 
 from loader import MultiBundleLoader, Vec2
 from benchmarks.detector import BoundingBox, LandingPadDetector
@@ -17,7 +16,7 @@ if (str(ROOT) + "/third_party/yolov5") not in sys.path:
 
 from models.common import DetectMultiBackend
 from utils.augmentations import letterbox
-from utils.general import non_max_suppression, check_img_size, xyxy2xywh, scale_coords
+from utils.general import non_max_suppression, check_img_size
 from utils.torch_utils import select_device
 
 
@@ -62,16 +61,14 @@ class YoloDetector(LandingPadDetector):
 
         Returns a list with dictionary items for each prediction
         """
-
-        # Dataloader
         im0 = np.array(image)
-        gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
 
+        # Resize and transform im0 into one the model can read
         im, ratio, (dw, dh) = letterbox(im0,
-                       self.imgsz,
-                       stride=self.model.stride,
-                       auto=False,
-                       scaleup=False)  # padded resize
+                                        self.imgsz,
+                                        stride=self.model.stride,
+                                        auto=False,
+                                        scaleup=False)  # padded resize
         im = im.transpose((2, 0, 1))  # HWC to CHW
         im = np.ascontiguousarray(im)  # contiguous
 
@@ -92,6 +89,7 @@ class YoloDetector(LandingPadDetector):
                                    agnostic=False,
                                    max_det=self.max_det)
 
+        # Collect results
         results = []
         for prediction in pred:
             if prediction.shape[0] == 0:
@@ -109,6 +107,7 @@ class YoloDetector(LandingPadDetector):
         if not results:
             return None
 
+        # Return the max-confidence result
         max_confidence = max(results, key=lambda x: x['confidence'])
         x, y, w, h = max_confidence['x'], max_confidence['y'], max_confidence[
             'w'], max_confidence['h']

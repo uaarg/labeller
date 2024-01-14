@@ -10,13 +10,16 @@ from loader import MultiBundleLoader, BundleLoader, Vec2
 from benchmarks.detector import LandingPadDetector, BoundingBox
 
 
-def benchmark(detector: LandingPadDetector,
-              bundles: BundleLoader | MultiBundleLoader,
-              dump_outputs=False,  # If True, will save all annotated images to tmp/out
-              ):
+def benchmark(
+        detector: LandingPadDetector,
+        bundles: BundleLoader | MultiBundleLoader,
+        dump_outputs=False,  # If True, will save all annotated images to tmp/out
+):
     if dump_outputs:
         print("Saving annotated outputs to tmp/out")
-        print("Green bounding boxes are the ground truth, red are the predictions")
+        print(
+            "Green bounding boxes are the ground truth, red are the predictions"
+        )
         shutil.rmtree("tmp/out", ignore_errors=True)
         os.makedirs("tmp/out", exist_ok=True)
 
@@ -31,8 +34,9 @@ def benchmark(detector: LandingPadDetector,
             y_true.append(None)
 
         spinner = "/-\\|"
-        print(f"Analysing {spinner[(i // 5) % len(spinner)]} ({i}/{len(bundles)})",
-              end='\r')
+        print(
+            f"Analysing {spinner[(i // 5) % len(spinner)]} ({i}/{len(bundles)})",
+            end='\r')
 
         start = time.time_ns()
         pred = detector.predict(im.image)
@@ -42,9 +46,10 @@ def benchmark(detector: LandingPadDetector,
             draw = ImageDraw.ImageDraw(im.image)
 
             for pad in im.landing_pads:
-                draw.rectangle([(pad.position.x, pad.position.y),
-                                (pad.position.x + pad.size.x,
-                                 pad.position.y + pad.size.y)],
+                draw.rectangle([
+                    (pad.position.x, pad.position.y),
+                    (pad.position.x + pad.size.x, pad.position.y + pad.size.y)
+                ],
                                outline=(0, 255, 0))
             if pred:
                 draw.rectangle([(pred.position.x, pred.position.y),
@@ -91,7 +96,9 @@ def benchmark(detector: LandingPadDetector,
         precisions.append(precision)
 
         accuracy = (tp + tn) / (tp + tn + fp + fn)
-        print(f"(threshold={threshold:.2f}) tp={tp}, fp={fp}, tn={tn}, fn={fn}; accuracy={accuracy}")
+        print(
+            f"(threshold={threshold:.2f}) tp={tp}, fp={fp}, tn={tn}, fn={fn}; accuracy={accuracy}"
+        )
 
     precisions.append(1)
     recalls.append(0)
