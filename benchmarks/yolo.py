@@ -2,22 +2,17 @@ from typing import Optional
 
 from PIL import Image
 import numpy as np
-import sys
 import torch
-from pathlib import Path
 
 from loader import MultiBundleLoader, Vec2
 from benchmarks.detector import BoundingBox, LandingPadDetector
 
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[1]
-if (str(ROOT) + "/third_party/yolov5") not in sys.path:
-    sys.path.append(str(ROOT) + "/third_party/yolov5")  # add yolov5 to PATH
-
-from models.common import DetectMultiBackend
-from utils.augmentations import letterbox
-from utils.general import non_max_suppression, check_img_size
-from utils.torch_utils import select_device
+# The 'type: ignore[import-untyped]' annotation here tells mypy to ignore that
+# these modules do not have type annotations.
+from models.common import DetectMultiBackend  # type: ignore[import-untyped]
+from utils.augmentations import letterbox  # type: ignore[import-untyped]
+from utils.general import non_max_suppression, check_img_size  # type: ignore[import-untyped]
+from utils.torch_utils import select_device  # type: ignore[import-untyped]
 
 
 class YoloDetector(LandingPadDetector):

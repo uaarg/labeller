@@ -17,4 +17,4 @@ if ! test -f "benchmarks/$benchmark.py"; then
   exit 1
 fi
 
-PYTHONPATH="." python3 "benchmarks/$benchmark.py"
+PYTHONPATH=".:third_party/yolov5" python3 "benchmarks/$benchmark.py"

@@ -46,15 +46,14 @@ def benchmark(
             draw = ImageDraw.ImageDraw(im.image)
 
             for pad in im.landing_pads:
-                draw.rectangle([
-                    (pad.position.x, pad.position.y),
-                    (pad.position.x + pad.size.x, pad.position.y + pad.size.y)
-                ],
+                draw.rectangle(((pad.position.x, pad.position.y),
+                                (pad.position.x + pad.size.x,
+                                 pad.position.y + pad.size.y)),
                                outline=(0, 255, 0))
             if pred:
-                draw.rectangle([(pred.position.x, pred.position.y),
+                draw.rectangle(((pred.position.x, pred.position.y),
                                 (pred.position.x + pred.size.x,
-                                 pred.position.y + pred.size.y)],
+                                 pred.position.y + pred.size.y)),
                                outline=(255, 0, 0))
 
             im.image.save(f"tmp/out/{i}.jpeg")
