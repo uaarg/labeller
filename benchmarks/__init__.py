@@ -95,6 +95,10 @@ def benchmark(
         recalls.append(recall)
         precisions.append(precision)
 
+        # Thresholds determine which IoU value constitutes a "correct" answer.
+        # A lower IoU means there is less agreement between the ground-truth
+        # and the estimation. Naturally, as the threshold increases, the
+        # accuracy should decrease.
         accuracy = (tp + tn) / (tp + tn + fp + fn)
         print(
             f"(threshold={threshold:.2f}) tp={tp}, fp={fp}, tn={tn}, fn={fn}; accuracy={accuracy}"
