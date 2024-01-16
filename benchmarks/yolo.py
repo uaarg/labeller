@@ -2,22 +2,17 @@ from typing import Optional
 
 from PIL import Image
 import numpy as np
-import sys
 import torch
-from pathlib import Path
 
 from loader import MultiBundleLoader, Vec2
 from benchmarks.detector import BoundingBox, LandingPadDetector
 
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[1]
-if (str(ROOT) + "/third_party/yolov5") not in sys.path:
-    sys.path.append(str(ROOT) + "/third_party/yolov5")  # add yolov5 to PATH
-
-from models.common import DetectMultiBackend
-from utils.augmentations import letterbox
-from utils.general import non_max_suppression, check_img_size, xyxy2xywh, scale_coords
-from utils.torch_utils import select_device
+# The 'type: ignore[import-untyped]' annotation here tells mypy to ignore that
+# these modules do not have type annotations.
+from models.common import DetectMultiBackend  # type: ignore[import-untyped]
+from utils.augmentations import letterbox  # type: ignore[import-untyped]
+from utils.general import non_max_suppression, check_img_size  # type: ignore[import-untyped]
+from utils.torch_utils import select_device  # type: ignore[import-untyped]
 
 
 class YoloDetector(LandingPadDetector):
@@ -61,16 +56,14 @@ class YoloDetector(LandingPadDetector):
 
         Returns a list with dictionary items for each prediction
         """
-
-        # Dataloader
         im0 = np.array(image)
-        gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
 
-        im = letterbox(im0,
-                       self.imgsz,
-                       stride=self.model.stride,
-                       auto=False,
-                       scaleup=False)[0]  # padded resize
+        # Resize and transform im0 into one the model can read
+        im, ratio, (dw, dh) = letterbox(im0,
+                                        self.imgsz,
+                                        stride=self.model.stride,
+                                        auto=False,
+                                        scaleup=False)  # padded resize
         im = im.transpose((2, 0, 1))  # HWC to CHW
         im = np.ascontiguousarray(im)  # contiguous
 
@@ -91,28 +84,25 @@ class YoloDetector(LandingPadDetector):
                                    agnostic=False,
                                    max_det=self.max_det)
 
-        # Second-stage classifier (optional)
-        # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
-
+        # Collect results
         results = []
-        for i, prediction in enumerate(pred):
-            prediction[:, :4] = scale_coords(im.shape[2:], prediction[:, :4],
-                                             im0.shape).round()
-            for *xyxy, conf, cls in reversed(prediction).tolist():
-                xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) /
-                        gn).view(-1).tolist()
-                results.append({
-                    'type': self.model.names[int(cls)],
-                    'confidence': conf,
-                    'x': xywh[0],
-                    'y': xywh[1],
-                    'w': xywh[2],
-                    'h': xywh[3]
-                })
+        for prediction in pred:
+            if prediction.shape[0] == 0:
+                continue
+
+            x1, y1, x2, y2 = prediction[0, :4].tolist()
+            results.append({
+                'confidence': prediction[0, 4].item(),
+                'x': min(x1, x2) - dw,
+                'y': min(y1, y2) - dh,
+                'w': abs(x2 - x1),
+                'h': abs(y2 - y1)
+            })
 
         if not results:
             return None
 
+        # Return the max-confidence result
         max_confidence = max(results, key=lambda x: x['confidence'])
         x, y, w, h = max_confidence['x'], max_confidence['y'], max_confidence[
             'w'], max_confidence['h']

@@ -21,6 +21,12 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
+You will also have to download the submodules. This can be done with:
+
+```sh
+git submodule update --init --recursive
+```
+
 ## Running
 
 Then the application can be started with the following on MacOS/Linux:
