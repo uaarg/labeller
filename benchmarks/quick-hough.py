@@ -9,6 +9,7 @@ from benchmarks.detector import BoundingBox, LandingPadDetector
 
 
 class QuickHoughDetector(LandingPadDetector):
+
     def __init__(self, dp: float = 4, minDist: float = 30):
         self.dp = dp
         self.minDist = minDist
@@ -20,8 +21,14 @@ class QuickHoughDetector(LandingPadDetector):
         gray_img = img[:, :, 2]
         _, thresh_img = cv2.threshold(gray_img, 226, 255, cv2.THRESH_BINARY)
 
-        circles = cv2.HoughCircles(thresh_img,cv2.HOUGH_GRADIENT,1,20,
-                        param1=50,param2=10,minRadius=0,maxRadius=0)
+        circles = cv2.HoughCircles(thresh_img,
+                                   cv2.HOUGH_GRADIENT,
+                                   1,
+                                   20,
+                                   param1=50,
+                                   param2=10,
+                                   minRadius=0,
+                                   maxRadius=0)
 
         if circles is None:
             return None
@@ -30,7 +37,7 @@ class QuickHoughDetector(LandingPadDetector):
         circle = min(circles[0], key=lambda vals: abs(vals[2] - 15))
         cx, cy, r = circle
 
-        return BoundingBox(Vec2(cx - r, cy - r), Vec2(2*r, 2*r))
+        return BoundingBox(Vec2(cx - r, cy - r), Vec2(2 * r, 2 * r))
 
 
 if __name__ == "__main__":
