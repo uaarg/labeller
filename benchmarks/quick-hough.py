@@ -39,4 +39,4 @@ if __name__ == "__main__":
 
     detector = QuickHoughDetector()
     bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
-    benchmark(detector, bundles, dump_outputs=True)
+    benchmark(detector, bundles)

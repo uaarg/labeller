@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 import time
 import os
@@ -6,14 +6,15 @@ import shutil
 import numpy as np
 from PIL import ImageDraw
 
-from loader import MultiBundleLoader, BundleLoader, Vec2
+from loader import MultiBundleLoader, BundleLoader, LabelledImage
 from benchmarks.detector import LandingPadDetector, BoundingBox
 
 
 def benchmark(
-        detector: LandingPadDetector,
-        bundles: BundleLoader | MultiBundleLoader,
-        dump_outputs=False,  # If True, will save all annotated images to tmp/out
+    detector: LandingPadDetector,
+    bundles: BundleLoader | MultiBundleLoader,
+    dump_outputs: bool  = False,  # If True, will save all annotated images to tmp/out
+    filter_images: Callable[[LabelledImage], bool] = lambda x: True,  # A callback to only run the benchmark on certain images
 ):
     if dump_outputs:
         print("Saving annotated outputs to tmp/out")
@@ -27,6 +28,9 @@ def benchmark(
     y_pred: List[Optional[BoundingBox]] = []
     times: List[float] = []
     for i, im in enumerate(bundles.iter()):
+        if not filter_images(im):
+            continue
+
         if len(im.landing_pads) > 0:
             pad = im.landing_pads[0]
             y_true.append(BoundingBox(pad.position, pad.size))
@@ -62,6 +66,10 @@ def benchmark(
         times.append(float(end - start) / 1e6)
 
     print(f"Complete ({len(bundles)} image(s) analysed)\n")
+
+    if len(times) == 0:
+        print("No images analyzed. Skipping stats calculations")
+        return
 
     print(f"Statistics for: {detector.__class__.__name__}")
 
