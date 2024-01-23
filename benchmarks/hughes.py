@@ -52,9 +52,10 @@ class HughesTransformDetector(LandingPadDetector):
         else:
             image = self.colorFilter(image,height,width)
         
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         plt.imshow(image)
         plt.show()
+        
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.medianBlur(image,5)
         circles = cv2.HoughCircles(image,cv2.HOUGH_GRADIENT,1,20,param1=100,param2=self.SENSITIVITY,
                            minRadius=self.MIN_RADIUS,maxRadius=self.MAX_RADIUS)
