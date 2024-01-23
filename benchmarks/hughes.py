@@ -3,6 +3,7 @@ from typing import Optional
 from PIL import Image
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
 
 from loader import MultiBundleLoader, Vec2
 # from benchmarks.detector import BoundingBox, LandingPadDetector
@@ -12,21 +13,31 @@ from detector import BoundingBox, LandingPadDetector
 
 class HughesTransformDetector(LandingPadDetector):
     
-    MINRADIUS = 2
-    MAXRADIUS = 20
+    MIN_RADIUS = 2
+    MAX_RADIUS = 20
     SENSITIVITY = 6
     FILTER = 1 # 0 toggles the monochromeFilter, any other value toggles the colorFilter
+    
+    BLUE_THRESHOLD = 230
+    GREEN_THRESHOLD = 230
+    RED_THRESHOLD = 50
 
     def __init__(self):
         super().__init__()
 
     def monochromeFilter(self, image: np.ndarray, imageHeight: int, imageWidth: int):
-        print(type(image))
+        for y in range(imageHeight):
+            for x in range(imageWidth):
+                newRed = abs(image[y,x,0]-self.RED_THRESHOLD)
+                newGreen = newRed + abs(image[y,x,1]-self.GREEN_THRESHOLD)
+                newBlue = newGreen + abs(image[y,x,2]-self.BLUE_THRESHOLD)
+                image[y,x,:] = newBlue
+        return image
 
     def colorFilter(self, image: np.ndarray, imageHeight: int, imageWidth: int):
         for y in range(imageHeight):
             for x in range(imageWidth):
-                if image[y,x,2] < 230:
+                if image[y,x,2] < self.BLUE_THRESHOLD:
                     image[y,x,:] = 255
                 else:
                     image[y,x,:] = 0
@@ -40,11 +51,13 @@ class HughesTransformDetector(LandingPadDetector):
             image = self.monochromeFilter(image,height,width)
         else:
             image = self.colorFilter(image,height,width)
-
+        
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        plt.imshow(image)
+        plt.show()
         image = cv2.medianBlur(image,5)
         circles = cv2.HoughCircles(image,cv2.HOUGH_GRADIENT,1,20,param1=100,param2=self.SENSITIVITY,
-                           minRadius=self.MINRADIUS,maxRadius=self.MAXRADIUS)
+                           minRadius=self.MIN_RADIUS,maxRadius=self.MAX_RADIUS)
         
         if circles is not None:
             sift = cv2.SIFT_create() # so that we can extract image keypoints later
@@ -85,7 +98,7 @@ if __name__ == "__main__":
     from detector import BoundingBox, LandingPadDetector
     
     detector = HughesTransformDetector()
-    for i in range(9550,9990):
+    for i in range(9700,9990):
         filename = "48/"+str(i)+".jpeg"
         print(f"processing {filename}")
         with Image.open(filename) as image:
