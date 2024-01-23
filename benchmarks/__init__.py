@@ -13,7 +13,7 @@ from benchmarks.detector import LandingPadDetector, BoundingBox
 def benchmark(
         detector: LandingPadDetector,
         bundles: BundleLoader | MultiBundleLoader,
-        dump_outputs=False,  # If True, will save all annotated images to tmp/out
+        dump_outputs=True,  # If True, will save all annotated images to tmp/out
 ):
     if dump_outputs:
         print("Saving annotated outputs to tmp/out")

@@ -5,22 +5,45 @@ import numpy as np
 import cv2
 
 from loader import MultiBundleLoader, Vec2
-from benchmarks.detector import BoundingBox, LandingPadDetector
+# from benchmarks.detector import BoundingBox, LandingPadDetector
+from detector import BoundingBox, LandingPadDetector
+
 
 
 class HughesTransformDetector(LandingPadDetector):
     
-    MINRADIUS = 10
-    MAXRADIUS = 100
-    SENSITIVITY = 40
+    MINRADIUS = 2
+    MAXRADIUS = 20
+    SENSITIVITY = 6
+    FILTER = 1 # 0 toggles the monochromeFilter, any other value toggles the colorFilter
 
     def __init__(self):
         super().__init__()
 
+    def monochromeFilter(self, image: np.ndarray, imageHeight: int, imageWidth: int):
+        print(type(image))
+
+    def colorFilter(self, image: np.ndarray, imageHeight: int, imageWidth: int):
+        for y in range(imageHeight):
+            for x in range(imageWidth):
+                if image[y,x,2] < 230:
+                    image[y,x,:] = 255
+                else:
+                    image[y,x,:] = 0
+        return image
+
     def predict(self, image: Image.Image) -> Optional[BoundingBox]:
-        image = cv2.imread(image,0)
+        image = np.array(image)
+        height, width, channels = image.shape
+
+        if self.FILTER == 0:
+            image = self.monochromeFilter(image,height,width)
+        else:
+            image = self.colorFilter(image,height,width)
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.medianBlur(image,5)
-        circles = cv2.HoughCircles(image,cv2.HOUGH_GRADIENT,1,20,param1=100,param2=SENSITIVITY,
+        circles = cv2.HoughCircles(image,cv2.HOUGH_GRADIENT,1,20,param1=100,param2=self.SENSITIVITY,
                            minRadius=self.MINRADIUS,maxRadius=self.MAXRADIUS)
         
         if circles is not None:
@@ -39,18 +62,41 @@ class HughesTransformDetector(LandingPadDetector):
             circleInfoList.sort(key=lambda x: x[1], reverse=True) # sort detected circles by # of keypoints
             mostAccurateCircle = circles[0,circleInfoList[0][0]]
     
-        x = mostAccurateCircle[0] - mostAccurateCircle[2]
-        y = mostAccurateCircle[1] + mostAccurateCircle[2]
-        w = 2*mostAccurateCircle[2]
-        h = 2*mostAccurateCircle[2]
+            x = mostAccurateCircle[0] - mostAccurateCircle[2]
+            y = mostAccurateCircle[1] - mostAccurateCircle[2]
+            w = 2*mostAccurateCircle[2]
+            h = 2*mostAccurateCircle[2]
 
-        return BoundingBox(Vec2(x, y), Vec2(w, h))
-
+            return mostAccurateCircle[0], mostAccurateCircle[1], mostAccurateCircle[2]
+            # return BoundingBox(Vec2(x, y), Vec2(w, h))
+        
+        else:
+            return None
+    
+    def debug(self, image):
+        image = np.array(image)
+        print(image)
 
 if __name__ == "__main__":
     import glob
-    from benchmarks import benchmark
+    # from benchmarks import benchmark
 
+    from loader import MultiBundleLoader, Vec2
+    from detector import BoundingBox, LandingPadDetector
+    
     detector = HughesTransformDetector()
-    bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
-    benchmark(detector, bundles)
+    for i in range(9550,9990):
+        filename = "48/"+str(i)+".jpeg"
+        print(f"processing {filename}")
+        with Image.open(filename) as image:
+            image.load()
+        array_image = np.array(image)
+        if detector.predict(image) != None:
+            center_x, center_y, radius = detector.predict(image)
+            cv2.circle(array_image, (center_x, center_y), radius, (0,0,255),1)
+            cv2.imwrite(f"BradleyPositives/{str(i)}.jpeg", array_image)
+        else:
+            cv2.imwrite(f"BradleyNegatives/{str(i)}.jpeg", array_image)
+
+    # bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
+    # benchmark(detector, bundles)
