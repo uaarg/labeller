@@ -9,6 +9,7 @@ from loader import MultiBundleLoader, Vec2
 # from benchmarks.detector import BoundingBox, LandingPadDetector
 from detector import BoundingBox, LandingPadDetector
 
+debug = 0
 
 
 class HughesTransformDetector(LandingPadDetector):
@@ -52,8 +53,8 @@ class HughesTransformDetector(LandingPadDetector):
         else:
             image = self.colorFilter(image,height,width)
         
-        plt.imshow(image)
-        plt.show()
+        # plt.imshow(image)
+        # plt.show()
         
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.medianBlur(image,5)
@@ -74,16 +75,18 @@ class HughesTransformDetector(LandingPadDetector):
                     numberOfKeypoints = len(keypoints)
                     circleInfoList.append((i, numberOfKeypoints))
             circleInfoList.sort(key=lambda x: x[1], reverse=True) # sort detected circles by # of keypoints
-            mostAccurateCircle = circles[0,circleInfoList[0][0]]
+            try:
+                mostAccurateCircle = circles[0,circleInfoList[0][0]]
+                x = mostAccurateCircle[0] - mostAccurateCircle[2]
+                y = mostAccurateCircle[1] - mostAccurateCircle[2]
+                w = 2*mostAccurateCircle[2]
+                h = 2*mostAccurateCircle[2]
+                return BoundingBox(Vec2(x, y), Vec2(w, h))
+            except IndexError:
+                pass
+            #FIXME why do IndexErrors occur in this program?
     
-            x = mostAccurateCircle[0] - mostAccurateCircle[2]
-            y = mostAccurateCircle[1] - mostAccurateCircle[2]
-            w = 2*mostAccurateCircle[2]
-            h = 2*mostAccurateCircle[2]
-
-            return mostAccurateCircle[0], mostAccurateCircle[1], mostAccurateCircle[2]
-            # return BoundingBox(Vec2(x, y), Vec2(w, h))
-        
+            #return mostAccurateCircle[0], mostAccurateCircle[1], mostAccurateCircle[2]        
         else:
             return None
     
@@ -92,25 +95,33 @@ class HughesTransformDetector(LandingPadDetector):
         print(image)
 
 if __name__ == "__main__":
-    import glob
-    # from benchmarks import benchmark
+    if debug == 0:
+        import glob
+        from benchmarks import benchmark
 
-    from loader import MultiBundleLoader, Vec2
-    from detector import BoundingBox, LandingPadDetector
-    
-    detector = HughesTransformDetector()
-    for i in range(9700,9990):
-        filename = "48/"+str(i)+".jpeg"
-        print(f"processing {filename}")
-        with Image.open(filename) as image:
-            image.load()
-        array_image = np.array(image)
-        if detector.predict(image) != None:
-            center_x, center_y, radius = detector.predict(image)
-            cv2.circle(array_image, (center_x, center_y), radius, (0,0,255),1)
-            cv2.imwrite(f"BradleyPositives/{str(i)}.jpeg", array_image)
-        else:
-            cv2.imwrite(f"BradleyNegatives/{str(i)}.jpeg", array_image)
+        detector = HughesTransformDetector()
+        bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
+        benchmark(detector, bundles)
+        import glob
+    else:
+        # from benchmarks import benchmark
+
+        from loader import MultiBundleLoader, Vec2
+        from detector import BoundingBox, LandingPadDetector
+        
+        detector = HughesTransformDetector()
+        for i in range(17456,17461):
+            filename = "48/"+str(i)+".jpeg"
+            print(f"processing {filename}")
+            with Image.open(filename) as image:
+                image.load()
+            array_image = np.array(image)
+            if detector.predict(image) != None:
+                center_x, center_y, radius = detector.predict(image)
+                cv2.circle(array_image, (center_x, center_y), radius, (0,0,255),1)
+                cv2.imwrite(f"BradleyPositives/{str(i)}.jpeg", array_image)
+            else:
+                cv2.imwrite(f"BradleyNegatives/{str(i)}.jpeg", array_image)
 
     # bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
     # benchmark(detector, bundles)
