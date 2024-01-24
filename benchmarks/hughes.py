@@ -18,7 +18,7 @@ class HughesTransformDetector(LandingPadDetector):
     MAX_RADIUS = 300  # was 20
     SENSITIVITY = 6
     FILTER = 1  # 0 toggles the monochromeFilter, any other value toggles the colorFilter
-    
+
     BLUE_THRESHOLD = 230
     GREEN_THRESHOLD = 230
     RED_THRESHOLD = 50
@@ -52,20 +52,20 @@ class HughesTransformDetector(LandingPadDetector):
             image = self.monochromeFilter(image, height, width)
         else:
             image = self.colorFilter(image, height, width)
-        
+
         # plt.imshow(image)
         # plt.show()
-        
+
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = cv2.medianBlur(image, 5)
         circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=self.SENSITIVITY,
                            minRadius=self.MIN_RADIUS, maxRadius=self.MAX_RADIUS)
-        
+
         if circles is not None:
             sift = cv2.SIFT_create()  # so that we can extract image keypoints later
             circles = np.uint16(np.around(circles))
             circleInfoList = []
-            
+
             for i in range(len(circles[0])):  # iterating through every circle detected
                 circle = circles[0, i] 
                 x, y, r = circle
@@ -85,14 +85,15 @@ class HughesTransformDetector(LandingPadDetector):
             except IndexError:
                 pass
             #FIXME why do IndexErrors even occur in this program?
-    
+
             #return mostAccurateCircle[0], mostAccurateCircle[1], mostAccurateCircle[2]        
         else:
             return None
-    
+
     def debug(self, image):
         image = np.array(image)
         print(image)
+
 
 if __name__ == "__main__":
     if debug == 0:
@@ -108,7 +109,7 @@ if __name__ == "__main__":
 
         from loader import MultiBundleLoader, Vec2
         from detector import BoundingBox, LandingPadDetector
-        
+
         detector = HughesTransformDetector()
         for i in range(17456, 17461):
             filename = "48/"+str(i)+".jpeg"
@@ -118,7 +119,7 @@ if __name__ == "__main__":
             array_image = np.array(image)
             if detector.predict(image) != None:
                 center_x, center_y, radius = detector.predict(image)
-                cv2.circle(array_image, (center_x, center_y), radius, (0,0,255), 1)
+                cv2.circle(array_image, (center_x, center_y), radius, (0, 0, 255), 1)
                 cv2.imwrite(f"BradleyPositives/{str(i)}.jpeg", array_image)
             else:
                 cv2.imwrite(f"BradleyNegatives/{str(i)}.jpeg", array_image)
