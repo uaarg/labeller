@@ -15,7 +15,7 @@ debug = 0
 class HughesTransformDetector(LandingPadDetector):
     
     MIN_RADIUS = 2
-    MAX_RADIUS = 20
+    MAX_RADIUS = 300 # was 20
     SENSITIVITY = 6
     FILTER = 1 # 0 toggles the monochromeFilter, any other value toggles the colorFilter
     
