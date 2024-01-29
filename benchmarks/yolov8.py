@@ -48,7 +48,7 @@ class Yolov8Detector(LandingPadDetector):
         
         
         
-        results = self.model.predict(im,
+        results = self.model.predict(im0,
                                      conf=self.conf_thres,
                                      iou=self.iou_thres,
                                      imgsz=self.imgsz,
