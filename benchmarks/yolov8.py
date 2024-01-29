@@ -42,20 +42,8 @@ class Yolov8Detector(LandingPadDetector):
         Returns a list with dictionary items for each prediction
         """
         im0 = np.array(image)
-
-        # Resize and transform im0 into one the model can read
-        im, ratio, (dw, dh) = letterbox(im0,
-                                        self.imgsz,
-                                        auto=False,
-                                        scaleup=False)  # padded resize
-        im = im.transpose((2, 0, 1))  # HWC to CHW
-        im = np.ascontiguousarray(im)  # contiguous
-
-        im = torch.from_numpy(im).to(self.model.device)
-        im = im.half() if self.model.fp16 else im.float()  # uint8 to fp16/32
-        im /= 255  # 0 - 255 to 0.0 - 1.0
-        if len(im.shape) == 3:
-            im = im[None]  # expand for batch dim       
+        print(im0)
+        
         
         
         
