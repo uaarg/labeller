@@ -46,7 +46,6 @@ class Yolov8Detector(LandingPadDetector):
         # Resize and transform im0 into one the model can read
         im, ratio, (dw, dh) = letterbox(im0,
                                         self.imgsz,
-                                        stride=self.model.stride,
                                         auto=False,
                                         scaleup=False)  # padded resize
         im = im.transpose((2, 0, 1))  # HWC to CHW
