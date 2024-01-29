@@ -17,7 +17,7 @@ from utils.torch_utils import select_device  # type: ignore[import-untyped]
 
 
 
-class Yolov8Detector():
+class Yolov8Detector(LandingPadDetector):
 
     def __init__(self, 
                  weights='benchmarks/yolov8_nano.pt',
@@ -33,6 +33,7 @@ class Yolov8Detector():
         self.half = half
         self.max_det = 1000
         self.iou_thres = 0.45
+        super().__init__()
 
     def predict(self, image: Image.Image) -> Optional[BoundingBox]:
 
