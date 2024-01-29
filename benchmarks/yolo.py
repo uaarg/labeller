@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 import torch
 
-from loader.loader import MultiBundleLoader, Vec2
+from loader import MultiBundleLoader, Vec2
 from benchmarks.detector import BoundingBox, LandingPadDetector
 
 # The 'type: ignore[import-untyped]' annotation here tells mypy to ignore that
@@ -112,16 +112,7 @@ class YoloDetector(LandingPadDetector):
 if __name__ == "__main__":
     import glob
     from benchmarks import benchmark
-    check = input("Enter '0' for yolov5 or enter '1' for yolov8: ")
-    while True:    
-        if check == "0":    
-            detector = YoloDetector()
-            break
-        elif check == "1":
-            detector = YoloDetector(weights="benchmarks/yolov8_nano.pt")
-            break
-        else: 
-            print("ERROR: Enter '0' or '1'")
-            continue
+    
+    detector = YoloDetector()
     bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
     benchmark(detector, bundles)
