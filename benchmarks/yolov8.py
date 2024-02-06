@@ -63,6 +63,7 @@ class Yolov8Detector(LandingPadDetector):
             results = r.boxes.xywh.tolist()
         if len(results) == 0: return None
         else:
+            results = results[0]
             x = results[0]
             y = results[1]
             w = results[0]
