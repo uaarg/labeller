@@ -41,9 +41,16 @@ class Yolov8Detector(LandingPadDetector):
 
         Returns a list with dictionary items for each prediction
         """
-        im0 = np.array(image)
+        im = np.array(image)
         
-        pred = self.model.predict(im0,
+        
+        
+        
+        
+        
+        
+        
+        pred = self.model.predict(im,
                                      conf=self.conf_thres,
                                      iou=self.iou_thres,
                                      imgsz=self.imgsz,
@@ -51,14 +58,8 @@ class Yolov8Detector(LandingPadDetector):
                                      device=self.device,
                                      max_det=self.max_det,
                                      )
-        flag = True
         for r in pred:
-            try:
-                if r.boxes.xywh == 0: continue
-            except: flag = False
-            if flag: 
-                print(r.boxes.xywh[0])
-            flag = True
+            print(r.boxes.xywh)
         #return BoundingBox(Vec2(x, y), Vec2(w, h))
         
 if __name__ == "__main__":
