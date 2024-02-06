@@ -48,7 +48,7 @@ class Yolov8Detector(LandingPadDetector):
         
         
         
-        results = self.model.predict(im0[0],
+        results = self.model.predict(im0,
                                      conf=self.conf_thres,
                                      iou=self.iou_thres,
                                      imgsz=self.imgsz,
@@ -57,7 +57,7 @@ class Yolov8Detector(LandingPadDetector):
                                      max_det=self.max_det,
                                      )
         print("-----------------------")
-        print(results)
+        print(results[0][0])
         
 if __name__ == "__main__":
     import glob
