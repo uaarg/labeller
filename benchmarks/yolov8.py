@@ -77,9 +77,3 @@ if __name__ == "__main__":
     detector = Yolov8Detector()
     bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
     benchmark(detector, bundles)
-
-
-
-
-
-        
