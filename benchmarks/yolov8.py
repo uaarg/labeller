@@ -57,7 +57,7 @@ class Yolov8Detector(LandingPadDetector):
                                      half=self.half,
                                      device=self.device,
                                      max_det=self.max_det,
-                                     )
+                                     verbose=False)
         results = []
         for r in pred:
             results = r.boxes.xywh.tolist()
