@@ -53,9 +53,12 @@ class Yolov8Detector(LandingPadDetector):
                                      )
         
         for r in pred:
-            if r.boxes.xywh == 0: continue
-            else: print(r.boxes.xywh[0])
-
+            try:
+                if r.boxes.xywh == 0: continue
+            except: flag = False
+            if flag: 
+                print(r.boxes.xywh[0])
+        flag = True
         #return BoundingBox(Vec2(x, y), Vec2(w, h))
         
 if __name__ == "__main__":
