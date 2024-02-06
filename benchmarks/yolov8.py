@@ -43,13 +43,6 @@ class Yolov8Detector(LandingPadDetector):
         """
         im = np.array(image)
         
-        
-        
-        
-        
-        
-        
-        
         pred = self.model.predict(im,
                                      conf=self.conf_thres,
                                      iou=self.iou_thres,
