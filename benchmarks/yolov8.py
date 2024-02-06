@@ -51,14 +51,14 @@ class Yolov8Detector(LandingPadDetector):
                                      device=self.device,
                                      max_det=self.max_det,
                                      )
-        
+        flag = True
         for r in pred:
             try:
                 if r.boxes.xywh == 0: continue
             except: flag = False
             if flag: 
                 print(r.boxes.xywh[0])
-        flag = True
+            flag = True
         #return BoundingBox(Vec2(x, y), Vec2(w, h))
         
 if __name__ == "__main__":
