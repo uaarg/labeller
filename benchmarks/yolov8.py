@@ -42,7 +42,7 @@ class Yolov8Detector(LandingPadDetector):
         Returns a list with dictionary items for each prediction
         """
         im0 = np.array(image)
-        print(im0)
+        print(im0[0])
         
         
         
@@ -56,7 +56,7 @@ class Yolov8Detector(LandingPadDetector):
                                      device=self.device,
                                      max_det=self.max_det,
                                      )
-        print(results)
+        print(results[0])
         
 if __name__ == "__main__":
     import glob
