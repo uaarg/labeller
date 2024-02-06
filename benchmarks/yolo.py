@@ -112,7 +112,6 @@ class YoloDetector(LandingPadDetector):
 if __name__ == "__main__":
     import glob
     from benchmarks import benchmark
-    
     detector = YoloDetector()
     bundles = MultiBundleLoader(glob.glob("tmp/labelled-bundles/*"))
     benchmark(detector, bundles)
