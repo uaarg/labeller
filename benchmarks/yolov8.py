@@ -56,6 +56,7 @@ class Yolov8Detector(LandingPadDetector):
                                      device=self.device,
                                      max_det=self.max_det,
                                      )
+        print("-----------------------")
         print(results[0])
         
 if __name__ == "__main__":
