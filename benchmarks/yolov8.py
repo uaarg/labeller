@@ -61,7 +61,7 @@ class Yolov8Detector(LandingPadDetector):
         results = []
         for r in pred:
             results = r.boxes.xywh.tolist()
-        if len(results) == 0: pass
+        if len(results) == 0: return None
         else:
             x = results[0]
             y = results[1]
