@@ -58,9 +58,14 @@ class Yolov8Detector(LandingPadDetector):
                                      device=self.device,
                                      max_det=self.max_det,
                                      )
+        results = []
         for r in pred:
-            print(r.boxes.xywh.tolist())
-        #return BoundingBox(Vec2(x, y), Vec2(w, h))
+            results = r.boxes.xywh.tolist()
+        x = results[0]
+        y = results[1]
+        w = results[0]
+        h = results[0]
+        return BoundingBox(Vec2(x, y), Vec2(w, h))
         
 if __name__ == "__main__":
     import glob
