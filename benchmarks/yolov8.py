@@ -51,27 +51,8 @@ class Yolov8Detector(LandingPadDetector):
                                      device=self.device,
                                      max_det=self.max_det,
                                      )
-        results = []
-        for prediction in pred:
-            if prediction.shape[0] == 0:
-                continue
-
-            x1, y1, x2, y2 = prediction[0, :4].tolist()
-            results.append({
-                'confidence': prediction[0, 4].item(),
-                'x': min(x1, x2) - dw,
-                'y': min(y1, y2) - dh,
-                'w': abs(x2 - x1),
-                'h': abs(y2 - y1)
-            })
-
-        if not results:
-            return None
-
-        # Return the max-confidence result
-        max_confidence = max(results, key=lambda x: x['confidence'])
-        x, y, w, h = max_confidence['x'], max_confidence['y'], max_confidence[
-            'w'], max_confidence['h']
+        for r in pred:
+            print(r.boxes)
         return BoundingBox(Vec2(x, y), Vec2(w, h))
         
 if __name__ == "__main__":
