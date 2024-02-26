@@ -13,10 +13,7 @@ from benchmarks.detector import LandingPadDetector, BoundingBox
 def benchmark(
         detector: LandingPadDetector,
         bundles: BundleLoader | MultiBundleLoader,
-        dump_outputs:
-    bool = False,  # If True, will save all annotated images to tmp/out
-        filter_images: Callable[[LabelledImage], bool] = lambda x:
-    True,  # A callback to only run the benchmark on certain images
+        dump_outputs=False,  # If True, will save all annotated images to tmp/out
 ):
     if dump_outputs:
         print("Saving annotated outputs to tmp/out")
