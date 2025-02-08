@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from ultralytics import YOLO
 
@@ -30,7 +30,7 @@ class YoloDetector(LandingPadDetector):
 
         self.model = model
 
-    def predict(self, image: Image.Image) -> Optional[BoundingBox]:
+    def predict(self, image: Image.Image) -> Optional[List]:
         """
         Runs the model on the supplied images
 
@@ -68,7 +68,7 @@ class YoloDetector(LandingPadDetector):
         max_confidence = max(self.results, key=lambda x: x['confidence'])
         x, y, w, h = max_confidence['x'], max_confidence['y'], max_confidence[
             'w'], max_confidence['h']
-        return BoundingBox(Vec2(x, y), Vec2(w, h))
+        return self.results
 
 
 if __name__ == "__main__":
