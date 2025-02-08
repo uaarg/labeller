@@ -26,7 +26,7 @@ class YoloDetector(LandingPadDetector):
         super().__init__()
 
         # Load model
-        model = DetectMultiBackend(weights)
+        model = YOLO(weights) 
 
         self.model = model
 
