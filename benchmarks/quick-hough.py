@@ -18,8 +18,12 @@ class QuickHoughDetector(LandingPadDetector):
     def predict(self, image: Image.Image) -> Optional[BoundingBox]:
         img = np.array(image)
 
-        gray_img = img[:, :, 2]
-        _, thresh_img = cv2.threshold(gray_img, 226, 255, cv2.THRESH_BINARY)
+        # Pre-processing
+        gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY) 
+        _, thresh_img = cv2.threshold(gray_img, 30, 255, cv2.THRESH_BINARY_INV)
+
+        thresh_img = cv2.medianBlur(thresh_img, 5)
+        cv2.imwrite("image.jpeg", thresh_img)
 
         circles = cv2.HoughCircles(thresh_img,
                                    cv2.HOUGH_GRADIENT,
