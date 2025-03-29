@@ -6,8 +6,8 @@ import shutil
 import numpy as np
 from PIL import ImageDraw
 
-from loader import MultiBundleLoader, BundleLoader, LabelledImage
-from benchmarks.detector import LandingPadDetector, BoundingBox
+from dep.labeller.loader import MultiBundleLoader, BundleLoader, LabelledImage
+from dep.labeller.benchmarks.detector import LandingPadDetector, BoundingBox
 
 
 def benchmark(

@@ -4,8 +4,8 @@ from PIL import Image
 import numpy as np
 import cv2
 
-from loader import MultiBundleLoader, Vec2
-from benchmarks.detector import BoundingBox, LandingPadDetector
+from dep.labeller.loader import MultiBundleLoader, Vec2
+from dep.labeller.benchmarks.detector import BoundingBox, LandingPadDetector
 
 
 class QuickHoughDetector(LandingPadDetector):
@@ -38,7 +38,7 @@ class QuickHoughDetector(LandingPadDetector):
             return None
 
         # values[2] is radius
-        circle = min(circles[0], key=lambda vals: abs(vals[2] - 15))
+        circle = min(circles[0], key=lambda vals: abs(vals[2] - 400))
         cx, cy, r = circle
 
         return BoundingBox(Vec2(cx - r, cy - r), Vec2(2 * r, 2 * r))

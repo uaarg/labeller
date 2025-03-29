@@ -3,7 +3,7 @@ from typing import Optional
 
 from PIL import Image
 
-from loader import Vec2
+from dep.labeller.loader import Vec2
 
 
 class BoundingBox:
